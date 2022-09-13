@@ -1,0 +1,25 @@
+api {
+    URL {
+        mainUrl: https://safe-sands-85755.herokuapp.com/
+        api: /api/
+        endPoints: categories/, products/, sizes/, orders/, colors/
+        #example: mainUrl + api + endPoint => https://safe-sands-85755.herokuapp.com/api/categories/
+        Auth {
+            accounts: /accounts/
+            endPoints: login, register
+            #example: mainUrl + api + accounts + endPoint => https://safe-sands-85755.herokuapp.com/api/accounts/login/
+
+        }
+
+
+    }
+    REST {
+          methodName: get, post, delete, patch
+          ModelName: Product, Category, Size, Color,
+          #keyword: methodNameModelNameId
+          #example: get = getCategoryId
+          #request: domain.com/api/catgories/?getCategoryId=categoryId
+          Modelsname for url: products, categories, sizes, orders, colors
+          Eslatma: agar siz faqat shunga(domain.com/api/modelsName/) murojat qilsangiz katigoryalar listini olasiz
+    }
+}

@@ -7,6 +7,12 @@ from productapp.models import Category, Color, Size, Product
 from orderapp.models import Order, OrderItem
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = "__all__"
+
+
 class CategorySerializer(serializers.ModelSerializer):
     amountOfProduct = serializers.SerializerMethodField(method_name='getAmountOfProduct')
 
@@ -33,33 +39,39 @@ class SizeSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    # color = ColorSerializer(many=True)
-    # size = SizeSerializer(many=True)
-    # category = CategorySerializer(many=False)
+    color = ColorSerializer(many=True)
+    size = SizeSerializer(many=True)
+    category = CategorySerializer(many=False)
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'price', 'image', 'category', 'size', 'color']
-
-
-class OrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Order
-        fields = '__all__'
+        fields = ['id', 'name', 'description',
+                  'price', 'image', 'category',
+                  'size', 'color', ]
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
     totalSumOrder = serializers.SerializerMethodField(method_name='getTotalSumOrder')
-    order = OrderSerializer(many=False)
+    # order = OrderSerializer(many=False)
     product = ProductSerializer(many=False)
 
     class Meta:
         model = OrderItem
-        fields = ('id', 'order', 'product', 'price', 'quantity', 'totalSumOrder',)
-        # fields = '__all__'
+        fields = ('id', 'order', 'product',
+                  'price', 'quantity', 'totalSumOrder',)
 
     def getTotalSumOrder(self, obj):
         return obj.getTotalSumOrder
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True)
+
+    class Meta:
+        model = Order
+        fields = ['user', 'first_name', 'last_name',
+                  'email', 'address', 'postal_code',
+                  'city', 'items', ]
 
 
 class RegisterSerializer(serializers.ModelSerializer):

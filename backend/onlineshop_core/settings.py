@@ -80,9 +80,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'productapp.context_processors.getTrandyProducts',
-                'productapp.context_processors.getArrivedProducts',
-                'productapp.context_processors.getCategories',
+
             ],
         },
     },

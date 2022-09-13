@@ -4,8 +4,8 @@ import uuid
 from django.db import models
 
 
-# models: Category, Product, Size, Color => read project_str.txt for more information
-# abstract model: BaseModel => read project_str.txt for more information
+# models: Category, Product, Size, Color => read doc_api.txt for more information
+# abstract model: BaseModel => read doc_api.txt for more information
 
 
 # Create your models here.

@@ -10,24 +10,11 @@ from utilites.response import response
 from orderapp.models import OrderItem, Order
 from productapp.models import Product, Category, Color, Size
 from .serializers import (ProductSerializer, OrderItemSerializer, CategorySerializer, \
-                          ColorSerializer, SizeSerializer, \
-                          RegisterSerializer, )
+                          ColorSerializer, SizeSerializer, UserSerializer,
+                          RegisterSerializer, OrderSerializer, )
 from rest_framework.parsers import MultiPartParser, FormParser
 
-
-@api_view(['GET'])
-def getRoutes(request):
-    routes = [
-        {'GET': '/api/categories/'},
-        {'GET': '/api/products/'},
-        {'GET': '/api/sizes/'},
-        {'GET': '/api/colors/'},
-        {'GET': '/api/accounts/register/'},
-        {'GET': '/api/accounts/login/'},
-
-        # {'DELETE': '/api/products/id/delete',}
-    ]
-    return response(data=routes, isBad=False)
+from api import serializers
 
 
 class GetRoutesView(views.APIView):
@@ -37,6 +24,7 @@ class GetRoutesView(views.APIView):
             {'GET': '/api/products/'},
             {'GET': '/api/sizes/'},
             {'GET': '/api/colors/'},
+            {'GET': '/api/orders/'},
             {'GET': '/api/accounts/register/'},
             {'GET': '/api/accounts/login/'},
 
@@ -54,12 +42,10 @@ class UserRegisterView(views.APIView):
             account = serializer.save()
             account.is_active = True
             account.save()
-            # token = Token.objects.get_or_create(user=account)[0].key
-            # data["token"] = token
             return response(data=serializer.data, isBad=False)
         else:
             data = serializer.errors
-            return response(data=serializer.data, isBad=True)
+            return response(data=data, isBad=True)
 
 
 class UserLoginView(views.APIView):
@@ -83,11 +69,11 @@ class CategoryCRUDView(views.APIView):
         Bu view orqali category modeli uchun crud bajariladi
     """
 
-    def get(self, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         categories = Category.objects.all()
-        categoryId = self.request.query_params.get('categoryId')
-        if categoryId is not None:
-            category = Category.objects.get(id=categoryId)
+        getCategoryId = self.request.query_params.get('getCategoryId')
+        if getCategoryId is not None:
+            category = Category.objects.get(id=getCategoryId)
             serializer = CategorySerializer(category, many=False)
             return response(data=serializer.data, isBad=False)
         else:
@@ -102,14 +88,14 @@ class CategoryCRUDView(views.APIView):
         return response(data=serializer.errors, isBad=True)
 
     def delete(self, request):
-        deleteId = self.request.query_params.get("deleteId")
-        category = Category.objects.get(id=deleteId)
+        deleteCategoryId = self.request.query_params.get("deleteCategoryId")
+        category = Category.objects.get(id=deleteCategoryId)
         category.delete()
         return response(data="Ma'lumot o'chirildi", isBad=False)
 
     def patch(self, request):
-        categoryId = self.request.query_params.get("patchId")
-        category = Category.objects.get(id=categoryId)
+        patchCategoryId = self.request.query_params.get("patchCategoryId")
+        category = Category.objects.get(id=patchCategoryId)
         serializer = CategorySerializer(data=request.data, instance=category)
         if serializer.is_valid():
             serializer.save()
@@ -118,16 +104,15 @@ class CategoryCRUDView(views.APIView):
 
 
 class ProductCRUDView(views.APIView):
-    parser_classes = MultiPartParser, FormParser
     """
         Bu view orqali product modeli uchun crud bajariladi
     """
 
     def get(self, *args, **kwargs):
-        productId = self.request.query_params.get('productId')
+        getProductId = self.request.query_params.get('getProductId')
         products = Product.objects.all()
-        if productId is not None:
-            product = Product.objects.get(pk=productId)
+        if getProductId is not None:
+            product = Product.objects.get(pk=getProductId)
             serializer = ProductSerializer(product, many=False)
             return response(data=serializer.data, isBad=False)
         else:
@@ -142,17 +127,17 @@ class ProductCRUDView(views.APIView):
         return response(data=serializer.errors, isBad=True)
 
     def delete(self, request):
-        deleteId = self.request.query_params.get("deleteId")
+        deleteProductId = self.request.query_params.get("deleteProductId")
         try:
-            product = Product.objects.get(id=deleteId)
+            product = Product.objects.get(id=deleteProductId)
             product.delete()
             return response(data="Ma'lumot o'chirildi", isBad=False)
         except Exception as error:
             return response(data=error, isBad=True)
 
     def patch(self, request):
-        patchId = self.request.query_params.get("patchId")
-        product = Product.objects.get(id=patchId)
+        patchProductId = self.request.query_params.get("patchProductId")
+        product = Product.objects.get(id=patchProductId)
         serializer = ProductSerializer(data=request.data, instance=product)
         if serializer.is_valid():
             serializer.save()
@@ -166,10 +151,10 @@ class ColorCRUDView(views.APIView):
     """
 
     def get(self, *args, **kwargs):
-        getId = self.request.query_params.get('getId')
+        getColorId = self.request.query_params.get('getColorId')
         colors = Color.objects.all()
-        if getId is not None:
-            color = Color.objects.get(pk=getId)
+        if getColorId is not None:
+            color = Color.objects.get(pk=getColorId)
             serializer = ColorSerializer(color, many=False)
             return response(data=serializer.data, isBad=False)
         else:
@@ -184,17 +169,17 @@ class ColorCRUDView(views.APIView):
         return response(data=serializer.errors, isBad=True)
 
     def delete(self, request):
-        deleteId = self.request.query_params.get("deleteId")
+        deleteColorId = self.request.query_params.get("deleteColorId")
         try:
-            color = Color.objects.get(id=deleteId)
+            color = Color.objects.get(id=deleteColorId)
             color.delete()
             return response(data="Ma'lumot o'chirildi", isBad=False)
         except Exception as e:
             return response(data="Bunday ma'lumot mavjud emas", isBad=True)
 
     def patch(self, request):
-        patchId = self.request.query_params.get("patchId")
-        color = Color.objects.get(id=patchId)
+        patchColorId = self.request.query_params.get("patchColorId")
+        color = Color.objects.get(id=patchColorId)
         serializer = ColorSerializer(data=request.data, instance=color)
         if serializer.is_valid():
             serializer.save()
@@ -208,10 +193,10 @@ class SizeCRUDView(views.APIView):
     """
 
     def get(self, *args, **kwargs):
-        getId = self.request.query_params.get('getId')
+        getSizeId = self.request.query_params.get('getSizeId')
         sizes = Size.objects.all()
-        if getId is not None:
-            size = Color.objects.get(pk=getId)
+        if getSizeId is not None:
+            size = Color.objects.get(pk=getSizeId)
             serializer = ColorSerializer(size, many=False)
             return response(data=serializer.data, isBad=False)
         else:
@@ -226,14 +211,14 @@ class SizeCRUDView(views.APIView):
         return response(data=serializer.errors, isBad=True)
 
     def delete(self, request):
-        deleteId = self.request.query_params.get("deleteId")
-        size = Size.objects.get(id=deleteId)
+        deleteSizeId = self.request.query_params.get("deleteSizeId")
+        size = Size.objects.get(id=deleteSizeId)
         size.delete()
         return response(data="Ma'lumot o'chirildi", isBad=False)
 
     def patch(self, request):
-        patchId = self.request.query_params.get("patchId")
-        size = Size.objects.get(id=patchId)
+        patchSizeId = self.request.query_params.get("patchSizeId")
+        size = Size.objects.get(id=patchSizeId)
         serializer = ColorSerializer(data=request.data, instance=size)
         if serializer.is_valid():
             serializer.save()
@@ -241,11 +226,31 @@ class SizeCRUDView(views.APIView):
         return response(data=serializer.errors, isBad=True)
 
 
+class OrderCRUDView(views.APIView):
+    def get(self, request):
+        userId = self.request.query_params.get("userId")
+        if userId is not None:
+            user = CustomUser.objects.get(id=userId)
+            orders = user.user_orders.all()
+            serializer = OrderSerializer(orders, many=True)
+            return response(data=serializer.data, isBad=False)
+        return response(data="User not found", isBad=True)
+
+    def post(self, request):
+        pass
+
+    def delete(self, request):
+        pass
+
+    def patch(self, request):
+        pass
+
+
 class OrderItemListView(views.APIView):
     def get(self, *args, **kwargs):
         orderItems = OrderItem.objects.all()
         serializer = OrderItemSerializer(orderItems, many=True)
-        orderId = self.request.query_params.get('orderId')
+        orderId = self.request.query_params.get('getOrderId')
         if orderId is not None:
             order = Order.objects.get(id=orderId)
             orderItems = order.items.all()
@@ -255,7 +260,14 @@ class OrderItemListView(views.APIView):
 
 
 class OrderItemDetailView(views.APIView):
-    def get(self, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         orderItem = OrderItem.objects.get(pk=kwargs)
         serializer = OrderItemSerializer(orderItem, many=False)
         return response(data=serializer.data, isBad=False)
+
+
+class UserListView(views.APIView):
+    def get(self, request, *args, **kwargs):
+        users = CustomUser.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return response(data=serializer.data)

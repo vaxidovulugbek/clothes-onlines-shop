@@ -8,6 +8,7 @@ django = "*"
 djangorestframework = "*"
 whitenoise = "*"
 pipfile = "*"
+environs = "*"
 
 [dev-packages]
 autopep8 = "*"
